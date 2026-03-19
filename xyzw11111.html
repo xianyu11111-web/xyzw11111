@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>11111 · 自动保存俱乐部</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #0d1421 0%, #1a2635 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 12px;
+        }
+
+        /* 磨砂玻璃卡片容器 */
+        .club-container {
+            max-width: 720px;
+            width: 100%;
+            background: rgba(18, 26, 34, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 215, 100, 0.25);
+            border-radius: 48px 48px 36px 36px;
+            box-shadow: 0 25px 50px -8px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 200, 70, 0.1) inset;
+            overflow: hidden;
+        }
+
+        /* 头部 — 硬核·发光体 */
+        .header {
+            background: radial-gradient(ellipse at 30% 40%, #2b3b4c, #0f1a22 90%);
+            padding: 28px 24px 20px 24px;
+            border-bottom: 2px solid #f5c542;
+            box-shadow: 0 8px 20px rgba(245, 197, 66, 0.2);
+            position: relative;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 10%;
+            width: 80%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ffdb7c, #f5b81b, #ffdb7c, transparent);
+            filter: blur(2px);
+        }
+
+        .club-name {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .club-name h1 {
+            font-size: 3.2rem;
+            font-weight: 800;
+            letter-spacing: 4px;
+            background: linear-gradient(135deg, #fff8e0, #fcd34d, #fbbf24);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 20px #fbbf2480, 0 2px 0 #00000030;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .club-tag {
+            background: #0000003d;
+            border: 1px solid #ffd966;
+            border-radius: 40px;
+            padding: 8px 22px;
+            color: #ffdb9f;
+            font-weight: 600;
+            font-size: 1.1rem;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 0 12px #fbbf2440;
+            letter-spacing: 1px;
+        }
+
+        .header-meta {
+            margin-top: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #adc4d9;
+            font-size: 0.95rem;
+            border-top: 1px dashed #64748b70;
+            padding-top: 16px;
+        }
+
+        .badge {
+            background: #26323f;
+            padding: 5px 18px;
+            border-radius: 30px;
+            border-left: 3px solid #f5b81b;
+            font-weight: 500;
+            color: #dbe9f5;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(5px);
+        }
+
+        .badge span {
+            color: #f7d44a;
+            font-weight: 700;
+            margin-left: 5px;
+        }
+
+        /* 表格区域 */
+        .table-wrapper {
+            padding: 18px 16px 8px 16px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            scrollbar-color: #f5b81b #1f313e;
+            background: rgba(6, 15, 20, 0.5);
+        }
+
+        .table-wrapper::-webkit-scrollbar {
+            height: 5px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-thumb {
+            background-color: #f5b81b;
+            border-radius: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 360px;
+            border-radius: 28px;
+            background: transparent;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        th {
+            background: #17222b;
+            color: #fbebc0;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 18px 6px 14px 6px;
+            border-bottom: 2px solid #f1c453;
+            text-align: center;
+            white-space: nowrap;
+            backdrop-filter: blur(4px);
+            position: relative;
+        }
+
+        th:first-child {
+            border-radius: 20px 0 0 0;
+        }
+
+        th:last-child {
+            border-radius: 0 20px 0 0;
+        }
+
+        td {
+            padding: 12px 6px;
+            border-bottom: 1px solid #33495e;
+            text-align: center;
+            vertical-align: middle;
+            background-color: #0d1a24c0;
+            backdrop-filter: blur(2px);
+            color: #e3eef8;
+        }
+
+        /* 序列靠左，名字靠左 */
+        td:first-child, th:first-child {
+            padding-left: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #ddeeff;
+            border-right: 1px solid #2c4453;
+        }
+
+        td:nth-child(2) {
+            text-align: left;
+            font-weight: 500;
+            color: #faf1d8;
+        }
+
+        td:nth-child(3), td:nth-child(4) {
+            font-weight: 600;
+            color: #ffecbf;
+        }
+
+        /* 可编辑输入框设计 — 黑金风格 */
+        td input {
+            width: 100%;
+            border: none;
+            background: #11212b;
+            font-family: inherit;
+            font-size: 0.95rem;
+            padding: 10px 8px;
+            text-align: center;
+            border-radius: 18px;
+            color: #f3e7c4;
+            font-weight: 500;
+            outline: 1.5px solid #425d70;
+            transition: 0.2s;
+            box-shadow: inset 0 2px 4px #00000050;
+        }
+
+        td input:focus {
+            outline: 2.5px solid #f7c948;
+            background-color: #1f333f;
+            color: #ffffff;
+            box-shadow: 0 0 12px #f5c15d;
+        }
+
+        td:first-child input, td:nth-child(2) input {
+            text-align: left;
+            padding-left: 14px;
+        }
+
+        /* 总计行 金碧辉煌 */
+        .total-row {
+            background: transparent;
+            border-top: 3px solid #f1c453;
+        }
+
+        .total-row td {
+            background: #101f2b;
+            font-size: 1.1rem;
+            padding: 18px 6px;
+            border-bottom: none;
+            font-weight: 700;
+            backdrop-filter: blur(4px);
+        }
+
+        .total-label {
+            text-align: right !important;
+            padding-right: 25px !important;
+            color: #ffe7a3;
+            font-size: 1.2rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            background: #0d1a25;
+        }
+
+        .total-number {
+            background: linear-gradient(145deg, #e7b42b, #f5d654);
+            padding: 10px 24px;
+            border-radius: 60px;
+            color: #0a1118;
+            font-weight: 800;
+            font-size: 1.4rem;
+            box-shadow: 0 4px 20px #f5b81b, 0 0 0 1px #ffd966 inset;
+            display: inline-block;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        /* 底部工具栏 暗金 */
+        .footer-tools {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 24px 26px 24px;
+            background: #0b171f;
+            gap: 16px;
+            flex-wrap: wrap;
+            border-top: 2px solid #b68b40;
+        }
+
+        .btn {
+            border: none;
+            background: #202f3b;
+            padding: 14px 30px;
+            border-radius: 60px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #f6eacb;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 8px 0 #0f171f, 0 8px 20px #00000070;
+            transition: 0.1s ease-out;
+            cursor: pointer;
+            border: 1px solid #75633e;
+            flex: 1 1 auto;
+            min-width: 150px;
+            letter-spacing: 0.7px;
+        }
+
+        .btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 #0f171f, 0 8px 18px black;
+        }
+
+        .btn.reset-btn {
+            background: #2b3e4b;
+            border-color: #7f8c6b;
+        }
+
+        .btn i {
+            font-size: 1.3rem;
+            filter: drop-shadow(0 0 5px gold);
+            font-style: normal;
+        }
+
+        .footnote {
+            max-width: 720px;
+            width: 100%;
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            color: #819eb3;
+            font-size: 0.8rem;
+            padding: 0 12px;
+        }
+    </style>
+</head>
+<body>
+<div class="club-container">
+    <div class="header">
+        <div class="club-name">
+            <h1>11111</h1>
+            <div class="club-tag">🏆 俱乐部 · 自动保存</div>
+        </div>
+        <div class="header-meta">
+            <div class="badge">
+                <span>⏤͟͟͞͞★</span> 熊猫进化·记忆 <span>⚡本地存储</span>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <span style="background:#1f2e38; padding:5px 14px; border-radius:30px;">💾 退出即存</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table id="clubTable">
+            <thead>
+                <tr><th>序列</th><th>名字</th><th>四圣</th><th>红粹</th></tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+            <tfoot id="tableFoot"></tfoot>
+        </table>
+    </div>
+
+    <div class="footer-tools">
+        <button class="btn reset-btn" id="resetBtn"><i>⟲</i> 重置清空</button>
+        <button class="btn" id="addRowBtn"><i>+</i> 新增战神</button>
+    </div>
+</div>
+<div class="footnote">
+    <span>💎 任何修改自动保存 · 刷新页面仍在</span>
+    <span>⚡ 红粹总和实时更新</span>
+</div>
+
+<script>
+    (function() {
+        // ---------- 原始熊猫数据 (作为“重置初始数据”的参考，但重置改为清空，所以只保留常量用于可能的扩展) ----------
+        // 但我们保留一份原始数据用于“重置初始数据”时清空——根据需求：重置初始数据可以全部清空
+        // 即清空所有成员，而非恢复成熊猫名单。
+        const EMPTY_DATA = [];   // 清空就是没有成员
+
+        // 本地存储键
+        const STORAGE_KEY = 'club11111_members';
+
+        // 获取tbody, tfoot
+        const tbody = document.getElementById('tableBody');
+        const tfoot = document.getElementById('tableFoot');
+
+        // ---------- 辅助函数 ----------
+        // 从本地加载数据，如果没有则返回null
+        function loadFromStorage() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                try {
+                    return JSON.parse(stored);
+                } catch (e) {
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        // 保存当前表格数据到本地 (只提取可编辑内容，序列不保存，根据行重建)
+        function saveToStorage() {
+            const rows = tbody.querySelectorAll('tr');
+            const data = [];
+            rows.forEach(row => {
+                const seqCell = row.children[0]; // 纯文本序列
+                const nameInput = row.children[1]?.querySelector('input');
+                const shengInput = row.children[2]?.querySelector('input');
+                const redInput = row.children[3]?.querySelector('input');
+
+                if (nameInput && shengInput && redInput) {
+                    // 序列需要从cell文本获取（但保存时存一下序列也可以，以便恢复）
+                    let seq = parseInt(seqCell.innerText.trim(), 10);
+                    if (isNaN(seq)) seq = 1;
+                    data.push({
+                        seq: seq,
+                        name: nameInput.value,
+                        sheng: shengInput.value,
+                        red: redInput.value === '' ? 0 : parseFloat(redInput.value) || 0
+                    });
+                }
+            });
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        // 计算红粹总和
+        function calculateTotal() {
+            let total = 0;
+            const rows = tbody.querySelectorAll('tr');
+            for (let row of rows) {
+                const fourthCell = row.children[3];
+                if (fourthCell) {
+                    const input = fourthCell.querySelector('input');
+                    if (input) {
+                        const val = parseFloat(input.value.trim()) || 0;
+                        total += val;
+                    } else {
+                        const textVal = parseFloat(fourthCell.innerText.trim()) || 0;
+                        total += textVal;
+                    }
+                }
+            }
+            return total;
+        }
+
+        // 更新底部总计
+        function updateTotalDisplay() {
+            const total = calculateTotal();
+            tfoot.innerHTML = ''; 
+            const footRow = tfoot.insertRow(0);
+            footRow.className = 'total-row';
+
+            const cell1 = footRow.insertCell(0);
+            const cell2 = footRow.insertCell(1);
+            const cell3 = footRow.insertCell(2);
+            const cell4 = footRow.insertCell(3);
+
+            cell1.colSpan = 2;
+            cell1.className = 'total-label';
+            cell1.innerHTML = '🏁 总计红粹';
+
+            cell2.innerHTML = '';
+            cell3.innerHTML = '';
+            cell4.innerHTML = `<span class="total-number" id="totalValue">${total}</span>`;
+            cell1.style.textAlign = 'right';
+        }
+
+        // 渲染表格 (接受对象数组 {seq, name, sheng, red} 或 二维数组形式)
+        function renderFromData(dataArray) {
+            tbody.innerHTML = '';
+            if (!dataArray || dataArray.length === 0) {
+                // 空表格，直接更新总计为0
+                updateTotalDisplay();
+                return;
+            }
+
+            // 确保按seq排序 (升序)
+            dataArray.sort((a, b) => a.seq - b.seq);
+
+            dataArray.forEach(item => {
+                const tr = document.createElement('tr');
+
+                // 序列 (纯文本)
+                const tdSeq = document.createElement('td');
+                tdSeq.innerText = item.seq;
+                tr.appendChild(tdSeq);
+
+                // 名字 可编辑
+                const tdName = document.createElement('td');
+                const nameInp = document.createElement('input');
+                nameInp.type = 'text';
+                nameInp.value = item.name || '';
+                nameInp.placeholder = '名字';
+                tdName.appendChild(nameInp);
+                tr.appendChild(tdName);
+
+                // 四圣 可编辑
+                const tdSheng = document.createElement('td');
+                const shengInp = document.createElement('input');
+                shengInp.type = 'text';
+                shengInp.value = item.sheng || '';
+                shengInp.placeholder = '四圣配置';
+                tdSheng.appendChild(shengInp);
+                tr.appendChild(tdSheng);
+
+                // 红粹 数字可编辑
+                const tdRed = document.createElement('td');
+                const redInp = document.createElement('input');
+                redInp.type = 'number';
+                redInp.value = item.red ?? 0;
+                redInp.placeholder = '0';
+                redInp.min = 0;
+                redInp.step = 1;
+                tdRed.appendChild(redInp);
+                tr.appendChild(tdRed);
+
+                // 监听输入: 更新总计并自动保存
+                [nameInp, shengInp, redInp].forEach(inp => {
+                    inp.addEventListener('input', () => {
+                        updateTotalDisplay();
+                        saveToStorage();   // 任何修改立即保存
+                    });
+                });
+
+                tbody.appendChild(tr);
+            });
+
+            updateTotalDisplay();
+        }
+
+        // 从当前DOM提取数据对象数组 (用于保存)
+        function getCurrentDataFromDOM() {
+            const rows = tbody.querySelectorAll('tr');
+            const data = [];
+            rows.forEach(row => {
+                const seqCell = row.children[0];
+                const nameInput = row.children[1]?.querySelector('input');
+                const shengInput = row.children[2]?.querySelector('input');
+                const redInput = row.children[3]?.querySelector('input');
+                if (nameInput && shengInput && redInput) {
+                    let seq = parseInt(seqCell.innerText.trim(), 10);
+                    if (isNaN(seq)) seq = 1;
+                    data.push({
+                        seq: seq,
+                        name: nameInput.value,
+                        sheng: shengInput.value,
+                        red: redInput.value === '' ? 0 : parseFloat(redInput.value) || 0
+                    });
+                }
+            });
+            return data;
+        }
+
+        // 重置为清空 (全部清空)
+        function resetToEmpty() {
+            if (confirm('确定要清空所有成员吗？未保存的数据将丢失。')) {
+                renderFromData(EMPTY_DATA);   // 空数组渲染
+                saveToStorage();                // 立即保存空状态
+            }
+        }
+
+        // 添加新成员 (空白)
+        function addNewMember() {
+            const currentData = getCurrentDataFromDOM();
+            let newSeq = 1;
+            if (currentData.length > 0) {
+                // 最大序列 +1
+                const maxSeq = Math.max(...currentData.map(d => d.seq));
+                newSeq = maxSeq + 1;
+            }
+
+            currentData.push({
+                seq: newSeq,
+                name: '',
+                sheng: '',
+                red: 0
+            });
+
+            // 重新渲染，触发保存
+            renderFromData(currentData);
+            saveToStorage();  // 保存新增后的数据
+        }
+
+        // 初始化: 优先从本地加载，否则默认给一个空表格？但产品预期是第一次打开显示熊猫数据？根据之前版本是有初始30条。
+        // 但需求说“重置初始数据的话可以全部清空”，但第一次打开最好显示原本的熊猫数据（更友好）。
+        // 为了既满足“自动保存”又保留原本熊猫数据作为首次默认，我们做如下逻辑：
+        // 1. 如果有本地存储，加载本地存储
+        // 2. 否则加载熊猫数据(INIT_DATA)
+        // 同时重置按钮是清空，不恢复熊猫数据，完全符合“重置初始数据全部清空”
+        // 定义熊猫原始数据二维数组，转换为对象数组
+        const PANDA_ARRAY = [
+            [1, "百达", "姜维38", 63],
+            [2, "啊呜硬", "姜维28", 50],
+            [3, "爱丽丝", "姜41曹20贾20", 61],
+            [4, "夜千", "赵云29", 58],
+            [5, "二斤", "关羽近50贾诩10", 70],
+            [6, "西风", "姜维31", 51],
+            [7, "碧落", "张角34", 53],
+            [8, "酒哥", "姜维30孙策10", 61],
+            [9, "JUJU", "周瑜30", 55],
+            [10, "雪落", "赵云20曹仁20", 50],
+            [11, "万叶", "周瑜27曹仁10", 50],
+            [12, "白榆", "周瑜27", 48],
+            [13, "茉莉", "周瑜20", 40],
+            [14, "逸", "姜维28", 44],
+            [15, "太白", "吴国26", 54],
+            [16, "爱莱尔", "姜维32", 58],
+            [17, "浪漫", "典韦25", 57],
+            [18, "不语", "关羽41", 79],
+            [19, "G总", "典韦30", 61],
+            [20, "水水", "典韦30", 62],
+            [21, "情西", "吴国27", 61],
+            [22, "浅白", "典韦30", 54],
+            [23, "鲲鹏", "典韦26", 54],
+            [24, "诺亚", "吕布23", 43],
+            [25, "C哥", "司马30", 57],
+            [26, "重置", "三蜀26", 54],
+            [27, "龅牙", "姜维28", 52],
+            [28, "游神", "姜坚36", 54],
+            [29, "茜梦", "毒20", 61],
+            [30, "风声", "合力", 62]
+        ];
+
+        // 转换为对象格式
+        function pandaToObjects() {
+            return PANDA_ARRAY.map(row => ({
+                seq: row[0],
+                name: row[1],
+                sheng: row[2],
+                red: row[3]
+            }));
+        }
+
+        // 启动函数
+        function initialize() {
+            const stored = loadFromStorage();
+            if (stored && Array.isArray(stored) && stored.length > 0) {
+                // 使用存储的数据 (确保每个对象有seq, name, sheng, red)
+                renderFromData(stored);
+            } else {
+                // 无存储时加载熊猫数据作为默认
+                renderFromData(pandaToObjects());
+                // 顺便保存一次到本地，以便刷新一致
+                saveToStorage();
+            }
+        }
+
+        // 调用初始化
+        initialize();
+
+        // 每次任何输入会调用saveToStorage, 同时我们也要在添加行之后保存
+        // 页面卸载前再保存一次（保险）
+        window.addEventListener('beforeunload', function() {
+            saveToStorage();
+        });
+
+        // 按钮事件
+        document.getElementById('resetBtn').addEventListener('click', resetToEmpty);
+        document.getElementById('addRowBtn').addEventListener('click', addNewMember);
+
+        // 捕捉外部点击或者隐藏保存，此外已经通过input事件保存，但为了防止添加行后忘记保存，addNewMember已经调用save
+        // 另外，当直接通过脚本修改时（如重置），已经保存
+    })();
+</script>
+</body>
+</html>
